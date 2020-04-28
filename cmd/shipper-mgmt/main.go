@@ -78,10 +78,11 @@ var (
 type metricsCfg struct {
 	readyCh chan struct{}
 
-	wqMetrics    *shippermetrics.PrometheusWorkqueueProvider
-	restLatency  *shippermetrics.RESTLatencyMetric
-	restResult   *shippermetrics.RESTResultMetric
-	stateMetrics statemetrics.Metrics
+	wqMetrics     *shippermetrics.PrometheusWorkqueueProvider
+	restLatency   *shippermetrics.RESTLatencyMetric
+	restResult    *shippermetrics.RESTResultMetric
+	stateMetrics  statemetrics.Metrics
+	metricsBundle *metrics.MetricsBundle
 }
 
 type cfg struct {
@@ -228,11 +229,12 @@ func main() {
 		stopCh: stopCh,
 
 		metrics: &metricsCfg{
-			readyCh:      metricsReadyCh,
-			wqMetrics:    shippermetrics.NewProvider(),
-			restLatency:  shippermetrics.NewRESTLatencyMetric(),
-			restResult:   shippermetrics.NewRESTResultMetric(),
-			stateMetrics: ssm,
+			readyCh:       metricsReadyCh,
+			wqMetrics:     shippermetrics.NewProvider(),
+			restLatency:   shippermetrics.NewRESTLatencyMetric(),
+			restResult:    shippermetrics.NewRESTResultMetric(),
+			stateMetrics:  ssm,
+			metricsBundle: metrics.NewMetricsBundle(),
 		},
 	}
 
@@ -262,6 +264,7 @@ func runMetrics(cfg *metricsCfg) {
 	prometheus.MustRegister(cfg.restLatency.Summary, cfg.restResult.Counter)
 	prometheus.MustRegister(instrumentedclient.GetMetrics()...)
 	prometheus.MustRegister(cfg.stateMetrics)
+	prometheus.MustRegister(cfg.metricsBundle.TimeToInstallation)
 
 	srv := http.Server{
 		Addr: *metricsAddr,
@@ -480,7 +483,7 @@ func startMetricsController(cfg *cfg) (bool, error) {
 		client.NewShipperClientOrDie(metrics.AgentName, cfg.restCfg),
 		cfg.shipperInformerFactory,
 		cfg.recorder(metrics.AgentName),
-		metrics.NewMetricsBundle(),
+		cfg.metrics.metricsBundle,
 	)
 
 	cfg.wg.Add(1)
