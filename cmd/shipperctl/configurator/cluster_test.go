@@ -147,6 +147,8 @@ func newCluster() *Cluster {
 
 func (f *fixture) newValidatingWebhookConfiguration(caBundle []byte, namespace string, operations []admissionregistrationv1beta1.OperationType) *admissionregistrationv1beta1.ValidatingWebhookConfiguration {
 	path := shipperValidatingWebhookServicePath
+	policyTypeFail := admissionregistrationv1beta1.Fail
+	sideEffectClassNone := admissionregistrationv1beta1.SideEffectClassNone
 	return &admissionregistrationv1beta1.ValidatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: shipperValidatingWebhookName,
@@ -172,6 +174,8 @@ func (f *fixture) newValidatingWebhookConfiguration(caBundle []byte, namespace s
 						},
 					},
 				},
+				FailurePolicy: &policyTypeFail,
+				SideEffects:   &sideEffectClassNone,
 			},
 		},
 	}

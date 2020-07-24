@@ -390,6 +390,8 @@ func (c *Cluster) FetchKubernetesCABundle() ([]byte, error) {
 
 func (c *Cluster) CreateOrUpdateValidatingWebhookConfiguration(caBundle []byte, namespace string) error {
 	path := shipperValidatingWebhookServicePath
+	policyTypeFail := admissionregistrationv1beta1.Fail
+	sideEffectClassNone := admissionregistrationv1beta1.SideEffectClassNone
 	validatingWebhookConfiguration := &admissionregistrationv1beta1.ValidatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: shipperValidatingWebhookName,
@@ -418,6 +420,8 @@ func (c *Cluster) CreateOrUpdateValidatingWebhookConfiguration(caBundle []byte, 
 						},
 					},
 				},
+				FailurePolicy: &policyTypeFail,
+				SideEffects:   &sideEffectClassNone,
 			},
 		},
 	}
